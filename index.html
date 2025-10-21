@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>坦克大战 - 经典版首页</title>
+  <style>
+    :root {
+      --primary-red: #ff4500;
+      --gold: #ffd700;
+      --green: #00ff00;
+      --dark-overlay: rgba(0, 0, 0, 0.65);
+      --panel-bg: rgba(0, 0, 0, 0.75);
+      --border-glow: 0 0 12px rgba(255, 215, 0, 0.6), inset 0 0 8px rgba(255, 69, 0, 0.5);
+    }
+
+    html, body {
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      background: url('assets/images/index.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .screen-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--dark-overlay);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+
+    .panel {
+      width: min(960px, 92vw);
+      border: 2px solid var(--gold);
+      background: var(--panel-bg);
+      box-shadow: var(--border-glow);
+      border-radius: 10px;
+      padding: 24px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 12px;
+    }
+    .logo {
+      width: 64px; height: 64px;
+      image-rendering: pixelated;
+      border-radius: 8px;
+      border: 1px solid var(--gold);
+    }
+    .title {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      color: var(--gold);
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.5), 0 0 16px rgba(255, 69, 0, 0.35);
+      letter-spacing: 2px;
+    }
+    .subtitle {
+      font-size: clamp(14px, 2.2vw, 18px);
+      color: var(--green);
+      opacity: 0.9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+    }
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .section {
+      border: 1px solid var(--gold);
+      border-radius: 10px;
+      padding: 16px;
+      background: rgba(0,0,0,0.4);
+    }
+    .section h3 {
+      margin: 0 0 12px 0;
+      color: var(--gold);
+      font-size: 18px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      font-size: 14px;
+    }
+    .controls .key {
+      color: var(--primary-red);
+      font-weight: 700;
+    }
+
+    .actions {
+      display: flex; flex-wrap: wrap;
+      gap: 12px; margin-top: 14px;
+    }
+    button {
+      appearance: none; border: 1px solid var(--gold);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.4));
+      color: #fff; padding: 10px 16px; border-radius: 8px;
+      font-weight: 700; letter-spacing: 1px;
+      box-shadow: var(--border-glow);
+      cursor: pointer;
+    }
+    button.primary { border-color: var(--primary-red); }
+    button:active { transform: translateY(1px); }
+
+    .select {
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .select select {
+      padding: 8px 10px; border-radius: 8px; border: 1px solid var(--gold);
+      background: rgba(0,0,0,0.5); color: #fff;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      border: 1px dashed var(--gold);
+      border-radius: 10px; overflow: hidden;
+      background: rgba(0,0,0,0.35);
+      height: 360px;
+      display: grid; place-items: center;
+    }
+    canvas { image-rendering: pixelated; }
+
+    .footer { margin-top: 12px; font-size: 12px; opacity: 0.8; }
+
+    /* Loading bar for classic start */
+    .loading {
+      height: 8px; width: 100%; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden;
+      border: 1px solid var(--gold);
+    }
+    .loading > span {
+      display: block; height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--primary-red), var(--gold));
+      box-shadow: 0 0 8px rgba(255, 69, 0, 0.6);
+      transition: width 0.6s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-overlay">
+    <div class="panel">
+      <div class="header">
+        <img class="logo" src="assets/images/tankAll.gif" alt="Tank" />
+        <div>
+          <div class="title">坦克大战 · 经典版</div>
+          <div class="subtitle">WASD / 方向键移动 · 空格开火 · 保护基地</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="section">
+          <h3>立即开战</h3>
+          <div class="select" aria-label="选择难度">
+            <span>难度：</span>
+            <select id="difficulty">
+              <option value="easy">新兵（简单）</option>
+              <option value="normal" selected>士官（标准）</option>
+              <option value="hard">王牌（困难）</option>
+            </select>
+          </div>
+          <div class="actions">
+            <button id="startBtn" class="primary">开始游戏（Enter）</button>
+            <button id="soundBtn">音效：开启</button>
+          </div>
+          <div style="margin-top:12px" class="loading" aria-hidden="true"><span id="loadingBar"></span></div>
+          <div id="status" style="margin-top:8px; font-size:13px; color: var(--green);">准备就绪</div>
+        </div>
+
+        <div class="section">
+          <h3>操作说明</h3>
+          <div class="controls">
+            <div><span class="key">W / ↑</span> 前进</div>
+            <div><span class="key">S / ↓</span> 后退</div>
+            <div><span class="key">A / ←</span> 左转</div>
+            <div><span class="key">D / →</span> 右转</div>
+            <div><span class="key">Space</span> 开火</div>
+            <div><span class="key">Enter</span> 开始/暂停</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:16px">
+        <h3>战场预览</h3>
+        <div class="canvas-wrap">
+          <canvas id="preview" width="512" height="320" aria-label="战场预览"></canvas>
+        </div>
+        <div class="footer">提示：本预览仅为效果演示，实际游戏以关卡加载为准。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio assets -->
+  <audio id="sndMove" src="assets/audio/move.mp3" preload="auto"></audio>
+  <audio id="sndBullet" src="assets/audio/bulletCrack.mp3" preload="auto"></audio>
+  <audio id="sndExplode" src="assets/audio/playerCrack.mp3" preload="auto"></audio>
+
+  <script>
+    (function() {
+      const startBtn = document.getElementById('startBtn');
+      const soundBtn = document.getElementById('soundBtn');
+      const statusEl = document.getElementById('status');
+      const loadingBar = document.getElementById('loadingBar');
+      const difficultySel = document.getElementById('difficulty');
+      const canvas = document.getElementById('preview');
+      const ctx = canvas.getContext('2d');
+      const move = document.getElementById('sndMove');
+      const bullet = document.getElementById('sndBullet');
+      const explode = document.getElementById('sndExplode');
+
+      let soundOn = true;
+      function tryPlay(audio) {
+        if (!soundOn || !audio) return;
+        const p = audio.play();
+        if (p && typeof p.catch === 'function') { p.catch(() => {}); }
+      }
+
+      // Simple tank preview using sprite
+      const tankImg = new Image();
+      tankImg.src = 'assets/images/tankAll.gif';
+      tankImg.onload = () => {
+        drawPreview();
+      };
+
+      function drawPreview() {
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        // grid
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, w, h);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = 'rgba(255,215,0,0.35)';
+        for (let x = 0; x <= w; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+        for (let y = 0; y <= h; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+        // tank sprite center
+        const tx = w/2 - 32, ty = h/2 - 32;
+        ctx.drawImage(tankImg, 0, 0, 64, 64, tx, ty, 64, 64);
+        // base
+        ctx.fillStyle = 'rgba(255,0,0,0.6)';
+        ctx.fillRect(w - 64, h - 48, 48, 32);
+        ctx.strokeStyle = 'rgba(255,215,0,0.9)'; ctx.lineWidth = 2;
+        ctx.strokeRect(w - 64, h - 48, 48, 32);
+        // text
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 16px monospace';
+        ctx.fillText('基地', w - 58, h - 26);
+      }
+
+      // loading simulation and start
+      function startGame() {
+        startBtn.disabled = true;
+        statusEl.textContent = '正在加载关卡...';
+        loadingBar.style.width = '0%';
+        let pct = 0;
+        const timer = setInterval(() => {
+          pct = Math.min(100, pct + 20);
+          loadingBar.style.width = pct + '%';
+          tryPlay(move);
+          if (pct >= 100) {
+            clearInterval(timer);
+            statusEl.textContent = '加载完成 · 难度：' + difficultySel.value + ' · 进入战场！';
+            tryPlay(explode);
+            // simple flash
+            canvas.style.boxShadow = '0 0 24px rgba(255, 69, 0, 0.8)';
+            setTimeout(() => { canvas.style.boxShadow = 'none'; }, 600);
+            startBtn.disabled = false;
+            // navigate to game page after brief delay
+            setTimeout(() => {
+              window.location.href = 'game.html?difficulty=' + encodeURIComponent(difficultySel.value);
+            }, 600);
+          }
+        }, 350);
+      }
+
+      startBtn.addEventListener('click', startGame);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') startGame();
+        if (e.code === 'Space') { tryPlay(bullet); }
+      });
+
+      soundBtn.addEventListener('click', () => {
+        soundOn = !soundOn;
+        soundBtn.textContent = '音效：' + (soundOn ? '开启' : '关闭');
+      });
+
+      // initial draw
+      drawPreview();
+    })();
+  </script>
+</body>
+</html>
