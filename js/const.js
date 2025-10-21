@@ -34,13 +34,14 @@ POS["over"] = [384,64];
 POS["prop"] = [256,110];
 
 /**************声音资源*****************/
-var START_AUDIO = new Audio("assets/audio/start.mp3");
+// 统一到现有音频资源，避免404
+var START_AUDIO = new Audio("assets/audio/move.mp3");
 var BULLET_DESTROY_AUDIO = new Audio("assets/audio/bulletCrack.mp3");
-var TANK_DESTROY_AUDIO = new Audio("assets/audio/tankCrack.mp3");
+var TANK_DESTROY_AUDIO = new Audio("assets/audio/playerCrack.mp3");
 var PLAYER_DESTROY_AUDIO = new Audio("assets/audio/playerCrack.mp3");
 var MOVE_AUDIO = new Audio("assets/audio/move.mp3");
-var ATTACK_AUDIO = new Audio("assets/audio/attack.mp3");
-var PROP_AUDIO = new Audio("assets/audio/prop.mp3");
+var ATTACK_AUDIO = new Audio("assets/audio/bulletCrack.mp3");
+var PROP_AUDIO = new Audio("assets/audio/move.mp3");
 
 
 /**************游戏状态*****************/
