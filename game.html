@@ -119,13 +119,14 @@
     enemiesEl.textContent = String(config.enemies);
     player.speed = config.playerSpeed;
 
-    // add some more walls based on density
+    // add some more brick walls based on density (destructible), avoid base zone and existing walls
     for(let x=1; x<mapCols-1; x++){
       for(let y=1; y<mapRows-3; y++){
         if((x+y) % 5 === 0 && Math.random() < config.wallDensity){
           const k = `${x}|${y}`;
-          if(!walls.has(k) && !(x>=base.x && x<base.x+base.w && y>=base.y && y<base.y+base.h)){
-            walls.add(k);
+          const inBaseZone = (x>=base.x && x<base.x+base.w && y>=base.y && y<base.y+base.h);
+          if(!inBaseZone && !brickWalls.has(k) && !steelWalls.has(k)){
+            brickWalls.add(k);
           }
         }
       }
@@ -187,7 +188,7 @@
 
     function collides(nx, ny){
       const gx = Math.floor(nx / tile), gy = Math.floor(ny / tile);
-      return walls.has(`${gx}|${gy}`) || (gx>=base.x && gx<base.x+base.w && gy>=base.y && gy<base.y+base.h);
+      return brickWalls.has(`${gx}|${gy}`) || steelWalls.has(`${gx}|${gy}`) || (gx>=base.x && gx<base.x+base.w && gy>=base.y && gy<base.y+base.h);
     }
 
     const keys = new Set();
