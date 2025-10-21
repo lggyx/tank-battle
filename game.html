@@ -40,8 +40,8 @@
 
   <div class="container">
     <div class="canvas-wrap">
-      <!-- 与 js/const.js 保持一致尺寸 -->
-      <canvas id="gameCanvas" width="512" height="448" aria-label="游戏画面"></canvas>
+      <!-- 与 js/game.js 保持一致尺寸：GRID_SIZE=16 * GRID_COUNT=40 = 640x640 -->
+      <canvas id="gameCanvas" width="640" height="640" aria-label="游戏画面"></canvas>
     </div>
   </div>
 
@@ -82,8 +82,26 @@
     window.addEventListener('load', function(){
       game = new Game('gameCanvas');
     });
-    // 键盘 P 暂停（与 game.js 保持一致）
-    document.addEventListener('keydown', (e)=>{ if(e.code==='KeyP'){ game && game.togglePause(); }});
+    
+    // 全局键盘事件监听器（确保键盘控制正常工作）
+    document.addEventListener('keydown', (e) => {
+      // P键暂停
+      if (e.code === 'KeyP' && game) {
+        game.togglePause();
+      }
+      
+      // 防止空格键滚动页面
+      if (e.code === 'Space') {
+        e.preventDefault();
+      }
+    });
+    
+    // 防止空格键默认行为
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+      }
+    });
   </script>
 </body>
 </html>

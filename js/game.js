@@ -25,17 +25,24 @@ const levelData = [
     // 关卡1: 新兵训练营
     {
         name: "新兵训练营",
-        playerStart: { x: 17, y: 37 }, // 玩家坦克位置调整到左侧，远离老鹰
+        playerStart: { x: 15, y: 37 }, // 玩家坦克位置再向左移动两个网格
         basePosition: { x: 20, y: 37 }, // 老鹰位置保持在地图底部正中央
         enemies: [
-            { type: "basic", x: 1, y: 1, direction: DOWN },
-            { type: "basic", x: 20, y: 1, direction: DOWN },
-            { type: "basic", x: 37, y: 1, direction: DOWN }
+            // 2个固定炮台（不可移动）
+            { type: "basic", x: 10, y: 5, direction: DOWN, isStatic: true },
+            { type: "basic", x: 30, y: 5, direction: DOWN, isStatic: true },
+            // 1个巡逻坦克（矩形路径）
+            { type: "basic", x: 20, y: 1, direction: DOWN, patrolPath: [
+                { x: 20, y: 1, direction: DOWN },
+                { x: 20, y: 10, direction: RIGHT },
+                { x: 30, y: 10, direction: UP },
+                { x: 30, y: 1, direction: LEFT }
+            ]}
         ],
         map: [
             // 地图边界已由createMap方法自动创建
             
-            // L形训练通道 - 左上角
+            // L型通道强制转向练习 - 左上角
             { type: OBJECT_TYPE.BRICK, x: 6, y: 10 },
             { type: OBJECT_TYPE.BRICK, x: 7, y: 10 },
             { type: OBJECT_TYPE.BRICK, x: 8, y: 10 },
@@ -47,7 +54,7 @@ const levelData = [
             { type: OBJECT_TYPE.BRICK, x: 6, y: 14 },
             { type: OBJECT_TYPE.BRICK, x: 6, y: 15 },
             
-            // T形障碍物 - 右上角
+            // 固定标靶区域 - 右上角
             { type: OBJECT_TYPE.BRICK, x: 26, y: 10 },
             { type: OBJECT_TYPE.BRICK, x: 27, y: 10 },
             { type: OBJECT_TYPE.BRICK, x: 28, y: 10 },
@@ -58,7 +65,7 @@ const levelData = [
             { type: OBJECT_TYPE.BRICK, x: 28, y: 13 },
             { type: OBJECT_TYPE.BRICK, x: 28, y: 14 },
             
-            // 中央水域
+            // 移动标靶区域 - 中央水域
             { type: OBJECT_TYPE.WATER, x: 18, y: 18 },
             { type: OBJECT_TYPE.WATER, x: 19, y: 18 },
             { type: OBJECT_TYPE.WATER, x: 20, y: 18 },
@@ -76,7 +83,7 @@ const levelData = [
             { type: OBJECT_TYPE.WATER, x: 20, y: 21 },
             { type: OBJECT_TYPE.WATER, x: 21, y: 21 },
             
-            // 草地区域 - 左下角
+            // 草地区域 - 左下角（用于隐蔽训练）
             { type: OBJECT_TYPE.GRASS, x: 10, y: 26 },
             { type: OBJECT_TYPE.GRASS, x: 11, y: 26 },
             { type: OBJECT_TYPE.GRASS, x: 12, y: 26 },
@@ -90,41 +97,31 @@ const levelData = [
             { type: OBJECT_TYPE.GRASS, x: 12, y: 28 },
             { type: OBJECT_TYPE.GRASS, x: 13, y: 28 },
             
-            // 钢墙区域 - 右下角
-            { type: OBJECT_TYPE.STEEL, x: 28, y: 26 },
-            { type: OBJECT_TYPE.STEEL, x: 29, y: 26 },
-            { type: OBJECT_TYPE.STEEL, x: 30, y: 26 },
-            { type: OBJECT_TYPE.STEEL, x: 28, y: 27 },
-            { type: OBJECT_TYPE.STEEL, x: 29, y: 27 },
-            { type: OBJECT_TYPE.STEEL, x: 30, y: 27 },
+            // 基地全钢墙保护 - 右下角
+            { type: OBJECT_TYPE.STEEL, x: 18, y: 36 },
+            { type: OBJECT_TYPE.STEEL, x: 19, y: 36 },
+            { type: OBJECT_TYPE.STEEL, x: 20, y: 36 },
+            { type: OBJECT_TYPE.STEEL, x: 21, y: 36 },
+            { type: OBJECT_TYPE.STEEL, x: 22, y: 36 },
+            { type: OBJECT_TYPE.STEEL, x: 18, y: 37 },
+            { type: OBJECT_TYPE.STEEL, x: 22, y: 37 },
+            { type: OBJECT_TYPE.STEEL, x: 18, y: 38 },
+            { type: OBJECT_TYPE.STEEL, x: 19, y: 38 },
+            { type: OBJECT_TYPE.STEEL, x: 20, y: 38 },
+            { type: OBJECT_TYPE.STEEL, x: 21, y: 38 },
+            { type: OBJECT_TYPE.STEEL, x: 22, y: 38 },
             
-            // 小的草地区域 - 右侧中部
-            { type: OBJECT_TYPE.GRASS, x: 32, y: 22 },
-            { type: OBJECT_TYPE.GRASS, x: 33, y: 22 },
-            { type: OBJECT_TYPE.GRASS, x: 32, y: 23 },
-            { type: OBJECT_TYPE.GRASS, x: 33, y: 23 },
-            
-            // 老鹰周围的完全封闭保护墙 - U型结构包围老鹰
-            // { type: OBJECT_TYPE.BRICK, x: 18, y: 36 }, // 左上
-            { type: OBJECT_TYPE.BRICK, x: 19, y: 36 },
-            { type: OBJECT_TYPE.BRICK, x: 20, y: 36 },
-            { type: OBJECT_TYPE.BRICK, x: 21, y: 36 },
-            { type: OBJECT_TYPE.BRICK, x: 22, y: 36 }, // 右上
-            
-            // { type: OBJECT_TYPE.BRICK, x: 18, y: 36 }, // 左边中间
-            // { type: OBJECT_TYPE.BRICK, x: 22, y: 36 }, // 右边中间
-            
-            { type: OBJECT_TYPE.BRICK, x: 19, y: 37 }, // 左边下部
-            { type: OBJECT_TYPE.BRICK, x: 22, y: 37 }, // 右边下部
-            
-            { type: OBJECT_TYPE.BRICK, x: 19, y: 38 }, // 左底角
-            // { type: OBJECT_TYPE.BRICK, x: 19, y: 38 }, // 左底部
-            // { type: OBJECT_TYPE.BRICK, x: 21, y: 38 }, // 右底部
-            { type: OBJECT_TYPE.BRICK, x: 22, y: 38 }, // 右底角
+            // 巡逻路径标记 - 帮助玩家理解巡逻坦克路线
+            { type: OBJECT_TYPE.GRASS, x: 20, y: 5 },
+            { type: OBJECT_TYPE.GRASS, x: 20, y: 10 },
+            { type: OBJECT_TYPE.GRASS, x: 30, y: 10 },
+            { type: OBJECT_TYPE.GRASS, x: 30, y: 5 }
         ],
-        enemyCount: 10,
+        enemyCount: 3, // 只有3个敌人，符合训练营设计
         specialRules: {
-            enemySlowdown: 0.5 // 敌人移动和射击速度降低50%
+            enemySlowdown: 0.5, // 敌人移动和射击速度降低50%
+            trainingMode: true, // 训练模式，提供更多提示
+            protectedBase: true // 基地处于全钢墙保护状态
         }
     },
     // 关卡2: 闪电攻防战
@@ -507,16 +504,24 @@ class Game {
     setupKeyboardControls() {
         document.addEventListener('keydown', (e) => {
             this.keyState[e.code] = true;
+
+            // 阻止浏览器对方向键/空格等的默认行为，避免焦点在下拉框时箭头改变选项
+            if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) {
+                e.preventDefault();
+            }
             
             // 暂停游戏
             if (e.code === 'KeyP') {
                 this.togglePause();
             }
-        });
+        }, { passive: false });
         
         document.addEventListener('keyup', (e) => {
             this.keyState[e.code] = false;
-        });
+            if (e.code === 'Space') {
+                e.preventDefault();
+            }
+        }, { passive: false });
     }
     
     // 切换游戏暂停状态
@@ -636,8 +641,15 @@ class Game {
                 enemy.direction,
                 OBJECT_TYPE.ENEMY,
                 false,
-                enemy.type
+                enemy.type,
+                enemy // 传递敌人特殊属性数据
             );
+            
+            // 应用关卡特殊规则
+            if (level.specialRules) {
+                this.applySpecialRules(tank, level.specialRules);
+            }
+            
             this.enemies.push(tank);
             this.enemiesGenerated++; // 将初始敌人计入已生成数量
         });
@@ -645,6 +657,34 @@ class Game {
         // 更新剩余敌人数量
         this.enemiesLeft = level.enemyCount - this.enemiesGenerated + this.enemies.length;
         this.updateEnemyIcons();
+    }
+    
+    // 应用关卡特殊规则到坦克
+    applySpecialRules(tank, specialRules) {
+        if (!tank.isPlayer) { // 只对敌人坦克应用特殊规则
+            // 敌人减速规则
+            if (specialRules.enemySlowdown) {
+                tank.speed *= specialRules.enemySlowdown;
+                tank.maxShootCooldown *= (1 / specialRules.enemySlowdown); // 射击冷却时间相应增加
+            }
+            
+            // 训练模式规则
+            if (specialRules.trainingMode) {
+                // 在训练模式下，敌人行为更简单
+                tank.speed *= 0.8; // 进一步降低速度
+                tank.maxShootCooldown *= 1.5; // 射击频率降低
+            }
+            
+            // 时间限制规则（全局规则，不直接应用到单个坦克）
+            if (specialRules.timeLimit) {
+                // 时间限制是全局规则，在游戏主循环中处理
+            }
+            
+            // 随机墙壁规则（全局规则，不直接应用到单个坦克）
+            if (specialRules.randomWalls) {
+                // 随机墙壁是全局规则，在游戏主循环中处理
+            }
+        }
     }
     
     // 启动敌人生成器
@@ -846,14 +886,19 @@ class Game {
     
     // 处理玩家输入
     handlePlayerInput() {
-        // 移动方向控制
-        if (this.keyState['ArrowUp']) {
+        // 移动方向控制（支持方向键与WASD）
+        const up = this.keyState['ArrowUp'] || this.keyState['KeyW'];
+        const down = this.keyState['ArrowDown'] || this.keyState['KeyS'];
+        const left = this.keyState['ArrowLeft'] || this.keyState['KeyA'];
+        const right = this.keyState['ArrowRight'] || this.keyState['KeyD'];
+
+        if (up) {
             this.player.move(UP);
-        } else if (this.keyState['ArrowRight']) {
+        } else if (right) {
             this.player.move(RIGHT);
-        } else if (this.keyState['ArrowDown']) {
+        } else if (down) {
             this.player.move(DOWN);
-        } else if (this.keyState['ArrowLeft']) {
+        } else if (left) {
             this.player.move(LEFT);
         } else {
             this.player.stopMoving();
@@ -1034,9 +1079,15 @@ class Game {
         // 射击冷却
         enemy.aiShootTimer = (enemy.aiShootTimer || 0) + deltaTime;
         
-        // 第2关的装甲坦克(绿色坦克)具有追踪玩家的能力
-        if (this.currentLevel === 2 && enemy.tankType === 'armor') {
-            // 追踪玩家的智能AI
+        // 特殊敌人类型处理
+        if (enemy.isStatic) {
+            // 固定炮台：不移动，只射击
+            this.updateStaticTurretAI(enemy);
+        } else if (enemy.patrolPath && enemy.patrolPath.length > 0) {
+            // 巡逻坦克：按预定路径移动
+            this.updatePatrolTankAI(enemy, deltaTime);
+        } else if (this.currentLevel === 2 && enemy.tankType === 'armor') {
+            // 第2关的装甲坦克(绿色坦克)具有追踪玩家的能力
             this.updateArmorTankAI(enemy);
         } else {
             // 标准AI：每2秒改变一次行动
@@ -1109,6 +1160,53 @@ class Game {
                 const directions = [UP, RIGHT, DOWN, LEFT];
                 const randomDirection = directions[Math.floor(Math.random() * directions.length)];
                 enemy.move(randomDirection);
+            }
+        }
+    }
+    
+    // 固定炮台AI：不移动，只射击
+    updateStaticTurretAI(enemy) {
+        // 固定炮台不移动，只保持当前方向
+        enemy.stopMoving();
+        
+        // 每2-4秒射击一次
+        if (enemy.aiShootTimer >= 2000 + Math.random() * 2000) {
+            enemy.aiShootTimer = 0;
+            const bullet = enemy.shoot();
+            if (bullet) {
+                this.bullets.push(bullet);
+            }
+        }
+    }
+    
+    // 巡逻坦克AI：按预定路径移动
+    updatePatrolTankAI(enemy, deltaTime) {
+        // 更新巡逻计时器
+        enemy.patrolTimer = (enemy.patrolTimer || 0) + deltaTime;
+        
+        // 每3秒移动到下一个巡逻点
+        if (enemy.patrolTimer >= 3000) {
+            enemy.patrolTimer = 0;
+            
+            // 移动到下一个巡逻点
+            enemy.patrolIndex = (enemy.patrolIndex + 1) % enemy.patrolPath.length;
+            const nextPoint = enemy.patrolPath[enemy.patrolIndex];
+            
+            // 设置新的位置和方向
+            enemy.x = nextPoint.x * GRID_SIZE;
+            enemy.y = nextPoint.y * GRID_SIZE;
+            enemy.direction = nextPoint.direction;
+            
+            // 开始移动
+            enemy.move(nextPoint.direction);
+        }
+        
+        // 巡逻坦克射击频率较低，每4-6秒射击一次
+        if (enemy.aiShootTimer >= 4000 + Math.random() * 2000) {
+            enemy.aiShootTimer = 0;
+            const bullet = enemy.shoot();
+            if (bullet) {
+                this.bullets.push(bullet);
             }
         }
     }
@@ -1463,67 +1561,60 @@ class Game {
         });
     }
     
-    // 添加创建关卡选择器的方法
+    // 创建关卡选择器（嵌入到HUD右侧，避免与右上角按钮重叠）
     createLevelSelector() {
-        // 创建关卡选择器容器
+        const hudRight = document.querySelector('.hud > div:last-child');
+        const hudLeft = document.querySelector('.hud-left');
+        if (!hudRight) return;
+
+        // 容器并排放置在右侧按钮后面
         const selectorContainer = document.createElement('div');
         selectorContainer.className = 'level-selector';
-        selectorContainer.style.position = 'absolute';
-        selectorContainer.style.top = '10px';
-        selectorContainer.style.right = '10px';
-        selectorContainer.style.zIndex = '1000';
-        selectorContainer.style.background = 'rgba(0,0,0,0.5)';
-        selectorContainer.style.padding = '5px';
-        selectorContainer.style.borderRadius = '5px';
-        
-        // 创建标签
+        selectorContainer.style.display = 'inline-flex';
+        selectorContainer.style.alignItems = 'center';
+        selectorContainer.style.gap = '6px';
+        selectorContainer.style.marginLeft = '8px';
+
         const label = document.createElement('span');
-        label.textContent = '选择关卡: ';
-        label.style.color = 'white';
-        label.style.marginRight = '5px';
-        selectorContainer.appendChild(label);
-        
-        // 创建下拉选择框
+        label.textContent = '选择关卡:';
+        label.style.color = '#fff';
+
         const select = document.createElement('select');
         select.id = 'levelSelector';
-        select.style.padding = '3px';
-        select.style.borderRadius = '3px';
-        
-        // 添加关卡选项
+        select.style.padding = '6px 8px';
+        select.style.borderRadius = '6px';
+        select.style.border = '1px solid #ffd700';
+        select.style.background = 'rgba(0,0,0,0.5)';
+        select.style.color = '#fff';
+
         for (let i = 0; i < levelData.length; i++) {
             const option = document.createElement('option');
             option.value = i + 1;
             option.textContent = `第${i + 1}关: ${levelData[i].name}`;
             select.appendChild(option);
         }
-        
-        // 设置当前选中的关卡
         select.value = this.currentLevel;
-        
-        // 添加变更事件监听器
+
+        // 选择后失焦，防止箭头键继续控制下拉框
         select.addEventListener('change', (e) => {
             this.jumpToLevel(parseInt(e.target.value));
+            e.target.blur();
         });
-        
+
+        selectorContainer.appendChild(label);
         selectorContainer.appendChild(select);
-        
-        // 添加到页面
-        document.body.appendChild(selectorContainer);
-        
-        // 创建当前关卡名称显示
-        const levelNameDisplay = document.createElement('div');
-        levelNameDisplay.id = 'currentLevelName';
-        levelNameDisplay.style.position = 'absolute';
-        levelNameDisplay.style.top = '50px';
-        levelNameDisplay.style.right = '10px';
-        levelNameDisplay.style.zIndex = '1000';
-        levelNameDisplay.style.background = 'rgba(0,0,0,0.5)';
-        levelNameDisplay.style.padding = '5px';
-        levelNameDisplay.style.borderRadius = '5px';
-        levelNameDisplay.style.color = 'white';
-        levelNameDisplay.style.fontWeight = 'bold';
-        
-        document.body.appendChild(levelNameDisplay);
+        hudRight.appendChild(selectorContainer);
+
+        // 在HUD左侧附加当前关卡名称，避免与选择器重叠
+        let levelNameDisplay = document.getElementById('currentLevelName');
+        if (!levelNameDisplay) {
+            levelNameDisplay = document.createElement('div');
+            levelNameDisplay.id = 'currentLevelName';
+            levelNameDisplay.style.marginLeft = '14px';
+            levelNameDisplay.style.color = '#00ff00';
+            levelNameDisplay.style.fontWeight = '700';
+            if (hudLeft) hudLeft.appendChild(levelNameDisplay);
+        }
     }
     
     // 更新关卡名称显示
@@ -1534,7 +1625,6 @@ class Game {
             levelNameElement.textContent = `当前关卡: ${currentLevelData.name}`;
         }
         
-        // 更新下拉选择框
         const selector = document.getElementById('levelSelector');
         if (selector) {
             selector.value = this.currentLevel;
@@ -1565,7 +1655,7 @@ class GameObject {
 
 // 坦克类
 class Tank extends GameObject {
-    constructor(x, y, direction, type, isPlayer, tankType = 'basic') {
+    constructor(x, y, direction, type, isPlayer, tankType = 'basic', enemyData = null) {
         super(x, y, type, TANK_SIZE, TANK_SIZE);
         this.direction = direction;
         this.speed = isPlayer ? 3 : 2; // 玩家比敌人快一点
@@ -1574,6 +1664,14 @@ class Tank extends GameObject {
         this.tankType = tankType;
         this.shootCooldown = 0;
         this.maxShootCooldown = isPlayer ? 300 : 1500; // 玩家射击频率更高
+        
+        // 敌人特殊属性
+        if (!isPlayer && enemyData) {
+            this.isStatic = enemyData.isStatic || false; // 固定炮台
+            this.patrolPath = enemyData.patrolPath || null; // 巡逻路径
+            this.patrolIndex = 0; // 当前巡逻点索引
+            this.patrolTimer = 0; // 巡逻计时器
+        }
         
         // 特殊技能属性（仅玩家使用）
         if (isPlayer) {
@@ -2045,9 +2143,4 @@ class Base extends GameObject {
     }
 }
 
-// 初始化游戏
-let game; // 全局游戏实例
-
-window.addEventListener('load', () => {
-    game = new Game('gameCanvas');
-}); 
+// 初始化游戏由 game.html 负责创建全局实例，避免重复初始化
