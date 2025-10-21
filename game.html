@@ -73,17 +73,37 @@
     const tile = 32;
     const mapCols = Math.floor(canvas.width / tile);
     const mapRows = Math.floor(canvas.height / tile);
-    const walls = new Set();
+    // separate wall sets: bricks (destructible) and steel (indestructible)
+    const brickWalls = new Set();
+    const steelWalls = new Set();
     const base = { x: mapCols-2, y: mapRows-2, w: 2, h: 2 };
 
-    // Random walls for demo
-    for(let i=2;i<mapCols-3;i++){
-      if(i % 3 === 0) { walls.add(`${i}|6`); walls.add(`${i}|7`); }
+    // Level 1 layout: border steel, L-shaped corridor, base steel protection
+    // border steel frame
+    for(let x=0;x<mapCols;x++){ steelWalls.add(`${x}|0`); steelWalls.add(`${x}|${mapRows-1}`); }
+    for(let y=0;y<mapRows;y++){ steelWalls.add(`0|${y}`); steelWalls.add(`${mapCols-1}|${y}`); }
+    // fill bricks except corridors and base zone
+    for(let x=1;x<mapCols-1;x++){
+      for(let y=1;y<mapRows-1;y++){
+        const inBase = (x>=base.x-1 && x<=base.x+base.w && y>=base.y-1 && y<=base.y+base.h);
+        // L corridor: top row path to right, then down, then left at bottom per diagram
+        const isCorridor = (y===2 && x>=2 && x<=mapCols-3) || (x===mapCols-3 && y>=3 && y<=mapRows-4) || (y===mapRows-4 && x>=2 && x<=mapCols-4);
+        if(!isCorridor && !inBase){ brickWalls.add(`${x}|${y}`); }
+      }
+    }
+    // steel protect base fully (ring around base)
+    for(let x=base.x-1;x<=base.x+base.w;x++){
+      for(let y=base.y-1;y<=base.y+base.h;y++){
+        if(!(x>=base.x && x<base.x+base.w && y>=base.y && y<base.y+base.h)){
+          steelWalls.add(`${x}|${y}`);
+        }
+      }
     }
 
     const tankImg = new Image(); tankImg.src = 'assets/images/tankAll.gif';
     const player = { x: 2*tile, y: 2*tile, dir: 'up', speed: 2, size: 28 };
     const bullets = [];
+    const enemyBullets = [];
     let paused = false;
 
     // difficulty from query string
@@ -114,7 +134,7 @@
     // enemies patrol
     const enemies = [];
     function isBlocked(gx, gy){
-      return walls.has(`${gx}|${gy}`) || (gx>=base.x && gx<base.x+base.w && gy>=base.y && gy<base.y+base.h);
+      return brickWalls.has(`${gx}|${gy}`) || steelWalls.has(`${gx}|${gy}`) || (gx>=base.x && gx<base.x+base.w && gy>=base.y && gy<base.y+base.h);
     }
     function spawnEnemies(n){
       let tries = 0;
@@ -138,9 +158,11 @@
       for(let x=0;x<=canvas.width;x+=tile){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
       for(let y=0;y<=canvas.height;y+=tile){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
 
-      // walls
+      // walls: bricks and steel
       ctx.fillStyle = 'rgba(160,82,45,0.85)';
-      walls.forEach(key=>{ const [cx,cy] = key.split('|').map(Number); ctx.fillRect(cx*tile,cy*tile,tile,tile); });
+      brickWalls.forEach(key=>{ const [cx,cy] = key.split('|').map(Number); ctx.fillRect(cx*tile,cy*tile,tile,tile); });
+      ctx.fillStyle = 'rgba(192,192,192,0.95)';
+      steelWalls.forEach(key=>{ const [cx,cy] = key.split('|').map(Number); ctx.fillRect(cx*tile,cy*tile,tile,tile); });
 
       // base
       ctx.fillStyle = 'rgba(255,0,0,0.7)';
@@ -155,9 +177,12 @@
       ctx.fillStyle = '#00ff00';
       enemies.forEach(e=>{ if(!e.dead) ctx.fillRect(e.x-e.w/2, e.y-e.h/2, e.w, e.h); });
 
-      // bullets
+      // bullets (player)
       ctx.fillStyle = '#ffd700';
       bullets.forEach(b=>{ ctx.fillRect(b.x-2,b.y-2,4,4); });
+      // bullets (enemy)
+      ctx.fillStyle = '#ff4500';
+      enemyBullets.forEach(b=>{ ctx.fillRect(b.x-2,b.y-2,4,4); });
     }
 
     function collides(nx, ny){
@@ -192,6 +217,8 @@
           // change dir clockwise
           e.dir = e.dir==='left'?'up':e.dir==='up'?'right':e.dir==='right'?'down':'left';
         } else { e.x=ex; e.y=ey; }
+        // enemy shoot occasionally (关卡1敌弹速度降低50%)
+        if(Math.random() < 0.01){ enemyBullets.push({ x: e.x, y: e.y, dir: e.dir }); }
       });
 
       bullets.forEach(b=>{
@@ -199,7 +226,8 @@
         // hit wall
         const gx = Math.floor(b.x/tile), gy = Math.floor(b.y/tile);
         const k = `${gx}|${gy}`;
-        if(walls.has(k)){ walls.delete(k); b.dead = true; play(sndExplode); }
+        if(brickWalls.has(k)){ brickWalls.delete(k); b.dead = true; play(sndExplode); }
+        if(steelWalls.has(k)){ b.dead = true; }
         // out of bounds
         if(b.x<0||b.y<0||b.x>canvas.width||b.y>canvas.height){ b.dead = true; }
         // hit base
@@ -210,6 +238,22 @@
           if(Math.abs(e.x - b.x) < e.w/2 && Math.abs(e.y - b.y) < e.h/2){ e.dead = true; b.dead = true; play(sndExplode); }
         });
       });
+
+      // enemy bullets
+      enemyBullets.forEach(b=>{
+        // 速度降低50%
+        if(b.dir==='up') b.y -= 3; else if(b.dir==='down') b.y += 3; else if(b.dir==='left') b.x -= 3; else b.x += 3;
+        const gx = Math.floor(b.x/tile), gy = Math.floor(b.y/tile);
+        const k = `${gx}|${gy}`;
+        // 敌弹不可穿透砖墙
+        if(brickWalls.has(k) || steelWalls.has(k)){ b.dead = true; }
+        if(b.x<0||b.y<0||b.x>canvas.width||b.y>canvas.height){ b.dead = true; }
+        // 命中玩家
+        if(Math.abs(player.x - b.x) < 16 && Math.abs(player.y - b.y) < 16){ b.dead = true; play(sndExplode); livesEl.textContent = Math.max(0, Number(livesEl.textContent)-1); }
+        // 命中基地
+        if(gx>=base.x && gx<base.x+base.w && gy>=base.y && gy<base.y+base.h){ b.dead = true; play(sndExplode); livesEl.textContent = Math.max(0, Number(livesEl.textContent)-1); }
+      });
+      for(let i=enemyBullets.length-1;i>=0;i--){ if(enemyBullets[i].dead) enemyBullets.splice(i,1); }
       for(let i=bullets.length-1;i>=0;i--){ if(bullets[i].dead) bullets.splice(i,1); }
 
       // enemy contact with player
@@ -221,11 +265,27 @@
         }
       });
 
+      // victory/defeat check
+      const aliveEnemies = enemies.filter(e=>!e.dead).length;
+      enemiesEl.textContent = String(aliveEnemies);
+      if(Number(livesEl.textContent) <= 0){ paused = true; showOverlay('失败', '基地或玩家阵亡，按 R 重新开始'); }
+      if(aliveEnemies === 0){ paused = true; showOverlay('胜利', '清除敌军，按 R 继续'); }
+
       draw();
       requestAnimationFrame(update);
     }
 
     function shoot(){ bullets.push({ x: player.x, y: player.y, dir: player.dir }); }
+
+    // simple overlay
+    function showOverlay(title, tip){
+      const div = document.createElement('div');
+      div.style.position='fixed'; div.style.inset='0'; div.style.display='grid'; div.style.placeItems='center';
+      div.style.background='rgba(0,0,0,0.6)'; div.style.color='#ffd700'; div.style.font='bold 22px sans-serif';
+      div.innerHTML = `<div style="padding:20px 28px;border:2px solid #ffd700;border-radius:12px;background:rgba(0,0,0,0.5)"><div style="font-size:28px;margin-bottom:8px">${title}</div><div style="font-size:14px;color:#00ff00">${tip}</div></div>`;
+      document.body.appendChild(div);
+      document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='r'){ window.location.href='index.html'; } }, { once: true });
+    }
 
     pauseBtn.addEventListener('click', ()=>{ paused = !paused; });
 
