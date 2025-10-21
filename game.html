@@ -101,7 +101,7 @@
     }
 
     const tankImg = new Image(); tankImg.src = 'assets/images/tankAll.gif';
-    const player = { x: 2*tile, y: 2*tile, dir: 'up', speed: 2, size: 28 };
+    const player = { x: 2*tile + tile/2, y: 2*tile + tile/2, dir: 'up', speed: 2, size: 26 };
     const bullets = [];
     const enemyBullets = [];
     let paused = false;
@@ -171,8 +171,10 @@
       ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 2; ctx.strokeRect(base.x*tile, base.y*tile, base.w*tile, base.h*tile);
       ctx.fillStyle = '#ffd700'; ctx.font = 'bold 14px monospace'; ctx.fillText('基地', base.x*tile+8, base.y*tile+tile+6);
 
-      // player tank
-      ctx.drawImage(tankImg, 0,0,64,64, player.x-32+tile/2, player.y-32+tile/2, 64,64);
+      // player tank centered to grid cell
+      const px = Math.round(player.x) - 32;
+      const py = Math.round(player.y) - 32;
+      ctx.drawImage(tankImg, 0,0,64,64, px, py, 64,64);
 
       // enemies
       ctx.fillStyle = '#00ff00';
@@ -186,9 +188,20 @@
       enemyBullets.forEach(b=>{ ctx.fillRect(b.x-2,b.y-2,4,4); });
     }
 
-    function collides(nx, ny){
-      const gx = Math.floor(nx / tile), gy = Math.floor(ny / tile);
-      return brickWalls.has(`${gx}|${gy}`) || steelWalls.has(`${gx}|${gy}`) || (gx>=base.x && gx<base.x+base.w && gy>=base.y && gy<base.y+base.h);
+    // collision check using player's bounding box (size)
+    function collidesRect(nx, ny, half){
+      const corners = [
+        { x: nx - half, y: ny - half },
+        { x: nx + half, y: ny - half },
+        { x: nx - half, y: ny + half },
+        { x: nx + half, y: ny + half },
+      ];
+      for(const c of corners){
+        const gx = Math.floor(c.x / tile), gy = Math.floor(c.y / tile);
+        if(brickWalls.has(`${gx}|${gy}`) || steelWalls.has(`${gx}|${gy}`)) return true;
+        if(gx>=base.x && gx<base.x+base.w && gy>=base.y && gy<base.y+base.h) return true;
+      }
+      return false;
     }
 
     const keys = new Set();
@@ -196,6 +209,7 @@
       keys.add(e.key);
       if(e.code==='Space'){ shoot(); play(sndBullet); }
       if(e.key.toLowerCase()==='p'){ paused = !paused; }
+      if(e.key.toLowerCase()==='shift') { /* 轨迹预测预留 */ }
     });
     document.addEventListener('keyup', (e)=> keys.delete(e.key));
 
@@ -206,7 +220,11 @@
       if(keys.has('s') || keys.has('ArrowDown')){ ny += player.speed; player.dir='down'; play(sndMove); }
       if(keys.has('a') || keys.has('ArrowLeft')){ nx -= player.speed; player.dir='left'; play(sndMove); }
       if(keys.has('d') || keys.has('ArrowRight')){ nx += player.speed; player.dir='right'; play(sndMove); }
-      if(!collides(nx, ny)){ player.x = nx; player.y = ny; }
+      if(!collidesRect(nx, ny, player.size/2)){ player.x = nx; player.y = ny; } else {
+        // snap to grid edge to avoid jitter
+        player.x = Math.round(player.x);
+        player.y = Math.round(player.y);
+      }
 
       // enemies movement (patrol)
       enemies.forEach(e=>{
@@ -276,7 +294,7 @@
       requestAnimationFrame(update);
     }
 
-    function shoot(){ bullets.push({ x: player.x, y: player.y, dir: player.dir }); }
+    function shoot(){ bullets.push({ x: player.x, y: player.y, dir: player.dir }); play(sndBullet); }
 
     // simple overlay
     function showOverlay(title, tip){
